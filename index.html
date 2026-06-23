@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Junaayd Shaikh</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #0d1117;
+        --panel: #161b22;
+        --line: rgba(240, 246, 252, 0.12);
+        --text: #e6edf3;
+        --muted: #9da7b3;
+        --accent: #58a6ff;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: radial-gradient(circle at top, rgba(88, 166, 255, 0.2), transparent 40%), var(--bg);
+        color: var(--text);
+      }
+
+      main {
+        width: min(960px, calc(100% - 2rem));
+        margin: 0 auto;
+        padding: 4rem 0;
+      }
+
+      .hero,
+      .grid article {
+        background: rgba(22, 27, 34, 0.85);
+        border: 1px solid var(--line);
+        border-radius: 20px;
+      }
+
+      .hero {
+        padding: 3rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .eyebrow,
+      .tag {
+        display: inline-block;
+        font-size: 0.85rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--accent);
+      }
+
+      h1,
+      h2,
+      p {
+        margin-top: 0;
+      }
+
+      h1 {
+        font-size: clamp(2.5rem, 7vw, 4.75rem);
+        line-height: 0.95;
+        margin: 0.75rem 0 1rem;
+      }
+
+      .summary {
+        max-width: 44rem;
+        color: var(--muted);
+        font-size: 1.05rem;
+        line-height: 1.8;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1rem;
+      }
+
+      article {
+        padding: 1.5rem;
+      }
+
+      ul {
+        margin: 0;
+        padding-left: 1.1rem;
+        color: var(--muted);
+        line-height: 1.8;
+      }
+
+      .note {
+        margin-top: 1.5rem;
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+
+      @media (max-width: 640px) {
+        main {
+          padding: 1.5rem 0 2rem;
+        }
+
+        .hero,
+        article {
+          padding: 1.25rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="hero">
+        <span class="eyebrow">Base template</span>
+        <h1>Junaayd Shaikh</h1>
+        <p class="summary">
+          Software engineering minded developer with an interest in robotics, building useful systems,
+          and sharing what I am learning as I go. This is a quick personal site foundation for showing
+          what I am doing, what I have worked on, and where I want to go next.
+        </p>
+      </section>
+
+      <section class="grid" aria-label="Profile overview">
+        <article>
+          <span class="tag">What I'm doing</span>
+          <h2>Current focus</h2>
+          <ul>
+            <li>Building software projects and experimenting fast</li>
+            <li>Learning through real-world engineering work</li>
+            <li>Exploring robotics and hardware-adjacent ideas</li>
+          </ul>
+        </article>
+
+        <article>
+          <span class="tag">What I do</span>
+          <h2>Work + interests</h2>
+          <ul>
+            <li>Software engineering</li>
+            <li>Application development</li>
+            <li>Robotics and problem solving</li>
+            <li>Anything that mixes code with practical impact</li>
+          </ul>
+        </article>
+
+        <article>
+          <span class="tag">Use this section</span>
+          <h2>Qualifications + experience</h2>
+          <ul>
+            <li>Add your resume highlights here</li>
+            <li>Swap in internships, projects, or education</li>
+            <li>Link to GitHub, LinkedIn, or a contact method</li>
+          </ul>
+        </article>
+      </section>
+
+      <p class="note">
+        Intentionally minimal for now — easy to expand with projects, a timeline, writing, or contact details.
+      </p>
+    </main>
+  </body>
+</html>
