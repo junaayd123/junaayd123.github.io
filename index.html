@@ -157,4 +157,274 @@
       </p>
     </main>
   </body>
+
+  <script>
+  (function () {
+    // ── Overlay canvas ─────────────────────────────────────────────────────
+    const canvas = document.createElement('canvas');
+    Object.assign(canvas.style, {
+      position: 'fixed', top: '0', left: '0',
+      width: '100%', height: '100%',
+      pointerEvents: 'none', zIndex: '9999'
+    });
+    document.body.appendChild(canvas);
+
+    const ctx = canvas.getContext('2d');
+    let W = 0, H = 0;
+
+    // ── Mouse ──────────────────────────────────────────────────────────────
+    let rawX = -9999, rawY = -9999;
+    let mx   = -9999, my   = -9999;
+    window.addEventListener('mousemove', e => { rawX = e.clientX; rawY = e.clientY; });
+    window.addEventListener('mouseleave', () => { rawX = -9999; rawY = -9999; });
+
+    // ── Card cache ─────────────────────────────────────────────────────────
+    let cardEls    = [];
+    let rects      = [];
+    let offscreens = [];
+    let offCtxs    = [];
+
+    const PAD    = 55;
+    const SPREAD = 300;
+    const RADIUS = 20;
+
+    // ── Helpers ────────────────────────────────────────────────────────────
+    function distToRect(px, py, r) {
+      const dx = Math.max(r.left - px, 0, px - r.right);
+      const dy = Math.max(r.top  - py, 0, py - r.bottom);
+      return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    function rrPath(c, x, y, w, h, r) {
+      c.beginPath();
+      c.moveTo(x + r, y);
+      c.arcTo(x + w, y,     x + w, y + h, r);
+      c.arcTo(x + w, y + h, x,     y + h, r);
+      c.arcTo(x,     y + h, x,     y,     r);
+      c.arcTo(x,     y,     x + w, y,     r);
+      c.closePath();
+    }
+
+    // Layered strokes replace shadowBlur — same look, no per-pixel blur pass
+    const LAYERS = [
+      { lineW: 26,  a: 0.04, col: '88,166,255'  },
+      { lineW: 18,  a: 0.08, col: '100,180,255' },
+      { lineW: 10,  a: 0.18, col: '120,195,255' },
+      { lineW: 4,   a: 0.38, col: '160,215,255' },
+      { lineW: 1.5, a: 0.80, col: '220,240,255' },
+    ];
+
+    function updateRects() {
+      rects = cardEls.map(el => el.getBoundingClientRect());
+      rects.forEach((rect, i) => {
+        const ow = Math.round(rect.width  + PAD * 2);
+        const oh = Math.round(rect.height + PAD * 2);
+        if (!offscreens[i] || offscreens[i].width !== ow || offscreens[i].height !== oh) {
+          offscreens[i] = new OffscreenCanvas(ow, oh);
+          offCtxs[i]    = offscreens[i].getContext('2d');
+        }
+      });
+    }
+
+    let rectPending = false;
+    function scheduleRectUpdate() {
+      if (!rectPending) {
+        rectPending = true;
+        requestAnimationFrame(() => { updateRects(); rectPending = false; });
+      }
+    }
+
+    function buildCardCache() {
+      cardEls = [...document.querySelectorAll('.hero, .grid article')];
+      updateRects();
+    }
+
+    function resize() {
+      W = canvas.width  = window.innerWidth;
+      H = canvas.height = window.innerHeight;
+      scheduleRectUpdate();
+    }
+
+    // ── Render loop ────────────────────────────────────────────────────────
+    function drawFrame() {
+      mx += (rawX - mx) * 0.14;
+      my += (rawY - my) * 0.14;
+
+      ctx.clearRect(0, 0, W, H);
+
+      rects.forEach((rect, i) => {
+        const dist     = distToRect(mx, my, rect);
+        const strength = Math.max(0, 1 - dist / SPREAD);
+        if (strength < 0.005) return;
+
+        const oc = offCtxs[i];
+        const ow = offscreens[i].width;
+        const oh = offscreens[i].height;
+
+        // Card sits at (PAD, PAD) inside its small offscreen canvas
+        const lx = PAD, ly = PAD, lw = rect.width, lh = rect.height;
+
+        oc.clearRect(0, 0, ow, oh);
+
+        LAYERS.forEach(({ lineW, a, col }) => {
+          rrPath(oc, lx, ly, lw, lh, RADIUS);
+          oc.strokeStyle = `rgba(${col},${a})`;
+          oc.lineWidth   = lineW;
+          oc.stroke();
+        });
+
+        // Mask: radial gradient in local coords clips glow to near the mouse
+        const lmx = mx - (rect.left - PAD);
+        const lmy = my - (rect.top  - PAD);
+        const grad = oc.createRadialGradient(lmx, lmy, 0, lmx, lmy, SPREAD);
+        grad.addColorStop(0.00, 'rgba(0,0,0,1)');
+        grad.addColorStop(0.45, 'rgba(0,0,0,0.90)');
+        grad.addColorStop(0.78, 'rgba(0,0,0,0.28)');
+        grad.addColorStop(1.00, 'rgba(0,0,0,0)');
+
+        oc.globalCompositeOperation = 'destination-in';
+        oc.fillStyle = grad;
+        oc.fillRect(0, 0, ow, oh);
+        oc.globalCompositeOperation = 'source-over';
+
+        ctx.globalAlpha = strength;
+        ctx.drawImage(offscreens[i], Math.round(rect.left - PAD), Math.round(rect.top - PAD));
+        ctx.globalAlpha = 1;
+      });
+
+      requestAnimationFrame(drawFrame);
+    }
+
+    // ── Init — all variables declared above, safe to call now ─────────────
+    window.addEventListener('resize', resize);
+    window.addEventListener('scroll', scheduleRectUpdate);
+    buildCardCache();
+    resize();
+    requestAnimationFrame(drawFrame);
+  }());
+  </script>
+
+    // ── Mouse ──────────────────────────────────────────────────────────────
+    let rawX = -9999, rawY = -9999;
+    let mx   = -9999, my   = -9999;
+    window.addEventListener('mousemove', e => { rawX = e.clientX; rawY = e.clientY; });
+    window.addEventListener('mouseleave', () => { rawX = -9999; rawY = -9999; });
+
+    // ── Card cache — getBoundingClientRect only on resize/scroll ───────────
+    let cardEls   = [];
+    let rects     = [];
+    let offscreens = [];
+    let offCtxs    = [];
+
+    const PAD    = 55;   // bleed around each card for glow to spread into
+    const SPREAD = 300;
+    const RADIUS = 20;
+
+    function buildCardCache() {
+      cardEls = [...document.querySelectorAll('.hero, .grid article')];
+      updateRects();
+    }
+
+    function updateRects() {
+      rects = cardEls.map(el => el.getBoundingClientRect());
+      // Resize per-card offscreen canvases only when needed
+      rects.forEach((rect, i) => {
+        const ow = Math.round(rect.width  + PAD * 2);
+        const oh = Math.round(rect.height + PAD * 2);
+        if (!offscreens[i] || offscreens[i].width !== ow || offscreens[i].height !== oh) {
+          offscreens[i] = new OffscreenCanvas(ow, oh);
+          offCtxs[i]    = offscreens[i].getContext('2d');
+        }
+      });
+    }
+
+    let rectPending = false;
+    function scheduleRectUpdate() {
+      if (!rectPending) {
+        rectPending = true;
+        requestAnimationFrame(() => { updateRects(); rectPending = false; });
+      }
+    }
+
+    // ── Helpers ────────────────────────────────────────────────────────────
+    function distToRect(px, py, r) {
+      const dx = Math.max(r.left - px, 0, px - r.right);
+      const dy = Math.max(r.top  - py, 0, py - r.bottom);
+      return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    function rrPath(c, x, y, w, h, r) {
+      c.beginPath();
+      c.moveTo(x + r, y);
+      c.arcTo(x + w, y,     x + w, y + h, r);
+      c.arcTo(x + w, y + h, x,     y + h, r);
+      c.arcTo(x,     y + h, x,     y,     r);
+      c.arcTo(x,     y,     x + w, y,     r);
+      c.closePath();
+    }
+
+    // Layered strokes replace shadowBlur — same look, no per-pixel blur pass
+    const LAYERS = [
+      { lw: 26, a: 0.04, col: '88,166,255'  },
+      { lw: 18, a: 0.08, col: '100,180,255' },
+      { lw: 10, a: 0.18, col: '120,195,255' },
+      { lw: 4,  a: 0.38, col: '160,215,255' },
+      { lw: 1.5,a: 0.80, col: '220,240,255' },
+    ];
+
+    // ── Render loop ────────────────────────────────────────────────────────
+    function drawFrame() {
+      mx += (rawX - mx) * 0.14;
+      my += (rawY - my) * 0.14;
+
+      ctx.clearRect(0, 0, W, H);
+
+      rects.forEach((rect, i) => {
+        const dist     = distToRect(mx, my, rect);
+        const strength = Math.max(0, 1 - dist / SPREAD);
+        if (strength < 0.005) return;
+
+        const oc = offCtxs[i];
+        const ow = offscreens[i].width;
+        const oh = offscreens[i].height;
+
+        // Local coords: card sits at (PAD, PAD) inside the small offscreen canvas
+        const lx = PAD, ly = PAD, lw = rect.width, lh = rect.height;
+
+        oc.clearRect(0, 0, ow, oh);
+
+        // Draw layered strokes (no shadowBlur — the width gradient IS the glow)
+        LAYERS.forEach(({ lw: lineW, a, col }) => {
+          rrPath(oc, lx, ly, lw, lh, RADIUS);
+          oc.strokeStyle = `rgba(${col},${a})`;
+          oc.lineWidth   = lineW;
+          oc.stroke();
+        });
+
+        // Mask: radial gradient in local coords clips glow to near the mouse
+        const lmx = mx - (rect.left - PAD);
+        const lmy = my - (rect.top  - PAD);
+        const grad = oc.createRadialGradient(lmx, lmy, 0, lmx, lmy, SPREAD);
+        grad.addColorStop(0.00, 'rgba(0,0,0,1)');
+        grad.addColorStop(0.45, 'rgba(0,0,0,0.90)');
+        grad.addColorStop(0.78, 'rgba(0,0,0,0.28)');
+        grad.addColorStop(1.00, 'rgba(0,0,0,0)');
+
+        oc.globalCompositeOperation = 'destination-in';
+        oc.fillStyle = grad;
+        oc.fillRect(0, 0, ow, oh);          // tiny fill — only card-sized, not viewport
+        oc.globalCompositeOperation = 'source-over';
+
+        ctx.globalAlpha = strength;
+        ctx.drawImage(offscreens[i], Math.round(rect.left - PAD), Math.round(rect.top - PAD));
+        ctx.globalAlpha = 1;
+      });
+
+      requestAnimationFrame(drawFrame);
+    }
+
+    buildCardCache();
+    requestAnimationFrame(drawFrame);
+  }());
+  </script>
 </html>
