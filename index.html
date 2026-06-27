@@ -137,7 +137,10 @@
       .note {
         margin-top: 1.5rem;
         color: var(--muted);
-        font-size: 0.95rem;
+        font-size: 1rem;
+        line-height: 1.75; /* more breathing room */
+        max-width: 56ch;    /* limit measure for easier reading */
+        letter-spacing: 0.01em;
       }
 
       /*themebar stuff and NO MORE SAFARI TYPE APPEARANCES */
@@ -226,14 +229,22 @@
       <!--whoevers reading the source code, please dont fry me bro its my first post-->
       <section class="blogpost">
         <h2>Innovating with OpenCV</h2>
-        <h3>Jun 25, 2026</h3>
+        <h3>Jun 26, 2026</h3>
         <p>
-          <strong>This article is a WIP</strong>
+          <strong>This article is a WIP</strong><br>
           I've been doing Computer Vision for a while now. Most of where I use it includes FTC robotics, as well as SetBuddy, where I work. 
           At SetBuddy, I develop around human pose estimation with multiple models and frameworks. 
           It's definitely a bit of work with the research. Our programming team has been working hard with researching various methods and optimizing our processing speed as much as possible. 
           Even though we have a lot of work to do, and SetBuddy is still in its early stages, our programming team is driven by our passion to make some cool apps, 
-          even if we don't know a lot and dont have much to begin with. We learn as we go, and we are learning a lot.
+          even if we don't know a lot and dont have much to begin with. We learn as we go, and we are learning a lot. <br><br>
+          
+          For example, one of the first things I noticed when going into the SetBuddy Project was the 2D tracking system. 
+          Immediately, I pointed out that a 2D tracking system is highly flawed. Think: perspective distortion, tilt, occlusion, and more. 
+          I researched new methods within the 3D tracking field, using my own experiences, such as the late Microsoft Kinect. While it uses infrared technology instead of actual estimation, 
+          one of the key things I got out of it was exactly <strong>how </strong>the Kinect would process data. How does it truly interpret what YOU do? <br>
+          Because in the end, it doesnt matter what method you use to get data. You have to know how to process it.<br><br>
+
+          Now, we're using methods such as using BlazePose, a lightweight pose tracking model by Google, to give us full 3D tracking. Then, we do our SetBuddy magic to process and interpret that data.
         </p>
       </section>
 
